@@ -413,3 +413,6 @@ fabric.properties
 # Test recordings (slow-motion clips for the marker test) are too large for git
 *.mp4
 *.mov
+
+# Temp files
+tmp/

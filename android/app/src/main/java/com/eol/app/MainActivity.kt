@@ -1,11 +1,14 @@
 package com.eol.app
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -16,13 +19,24 @@ import com.eol.app.ui.theme.EolTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val cameraReport = CameraProbe.probeCamera(
+            context = this
+        )
+        val codecReport = CodecProbe.probeCodec()
+
+        val report = buildString {
+            appendLine(cameraReport)
+            appendLine(codecReport)
+        }
+        report.lines().forEach { Log.i("EolCamera", it) }
         enableEdgeToEdge()
         setContent {
             EolTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
+                        report = report,
                         modifier = Modifier.padding(innerPadding)
+                            .verticalScroll(rememberScrollState())
                     )
                 }
             }
@@ -31,10 +45,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun Greeting(report: String, modifier: Modifier = Modifier) {
     Text(
-        text = RustCore.helloworld(name),
-        modifier = modifier
+        text = report,
+        modifier = modifier,
     )
 }
 
