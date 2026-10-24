@@ -1,3 +1,3 @@
 # EolPiano
 
-This is the start of grat things ! (hopefully)
+This is the start of great things ! (hopefully)

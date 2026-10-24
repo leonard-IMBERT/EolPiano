@@ -1,0 +1,48 @@
+{
+  // Run with Ctrl+Shift+B (default build task) or Ctrl+Shift+P > "Tasks: Run Task"
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Rust: build for Android",
+      "detail": "cargo ndk → android/app/src/main/jniLibs (arm64-v8a, debug)",
+      "type": "process",
+      "command": "cargo",
+      "args": ["ndk", "-t", "arm64-v8a", "-o", "../android/app/src/main/jniLibs", "build"],
+      "options": { "cwd": "${workspaceFolder}/core" },
+      "problemMatcher": { "base": "$rustc", "fileLocation": ["autoDetect", "${workspaceFolder}/core"] },
+      "group": { "kind": "build", "isDefault": true }
+    },
+    {
+      "label": "Rust: build for Android (release)",
+      "detail": "Optimized build, for measuring latency and performance",
+      "type": "process",
+      "command": "cargo",
+      "args": ["ndk", "-t", "arm64-v8a", "-o", "../android/app/src/main/jniLibs", "build", "--release"],
+      "options": { "cwd": "${workspaceFolder}/core" },
+      "problemMatcher": { "base": "$rustc", "fileLocation": ["autoDetect", "${workspaceFolder}/core"] },
+      "group": "build"
+    },
+    {
+      "label": "Rust: test (desktop)",
+      "detail": "cargo test on Windows",
+      "type": "process",
+      "command": "cargo",
+      "args": ["test"],
+      "options": { "cwd": "${workspaceFolder}/core" },
+      "problemMatcher": { "base": "$rustc", "fileLocation": ["autoDetect", "${workspaceFolder}/core"] },
+      "group": { "kind": "test", "isDefault": true }
+    },
+    {
+      "label": "Android: build Rust, install and launch on phone",
+      "detail": "Rust build, then gradlew installDebug, then starts MainActivity",
+      "type": "shell",
+      "command": ".\\gradlew.bat installDebug; if ($?) { adb shell am start -n com.eol.app/.MainActivity }",
+      "options": {
+        "cwd": "${workspaceFolder}/android",
+        "shell": { "executable": "powershell.exe", "args": ["-NoProfile", "-Command"] }
+      },
+      "dependsOn": "Rust: build for Android",
+      "problemMatcher": []
+    }
+  ]
+}
