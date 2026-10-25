@@ -57,7 +57,12 @@ object CameraProbe {
         appendLine("==== Camera $id")
         appendLine("facing: ${FACING.nameOf(chars.get(CameraCharacteristics.LENS_FACING))}")
         appendLine("hardware level: ${HARDWARE_LEVEL.nameOf(chars.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL))}")
-        appendLine("focal lengths (mm): ${chars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)?.contentToString()}")
+        appendLine(
+            "focal lengths (mm): ${
+                chars.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+                    ?.contentToString()
+            }"
+        )
         appendLine("sensor orientation: ${chars.get(CameraCharacteristics.SENSOR_ORIENTATION)}")
         appendLine("timestamp source: ${TIMESTAMP_SOURCE.nameOf(chars.get(CameraCharacteristics.SENSOR_INFO_TIMESTAMP_SOURCE))}")
 
@@ -69,7 +74,12 @@ object CameraProbe {
             appendLine("exposure time: ${exposure.lower / 1000} us to ${exposure.upper / 1000} us")
         }
         appendLine("sensitivity (ISO): ${chars.get(CameraCharacteristics.SENSOR_INFO_SENSITIVITY_RANGE)}")
-        appendLine("AE target fps ranges: ${chars.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES)?.contentToString()}")
+        appendLine(
+            "AE target fps ranges: ${
+                chars.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES)
+                    ?.contentToString()
+            }"
+        )
 
         val map = chars.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)
         if (map != null) {

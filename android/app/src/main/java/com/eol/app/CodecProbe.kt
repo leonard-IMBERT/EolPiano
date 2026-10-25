@@ -9,7 +9,8 @@ import android.media.MediaCodecList
 import android.media.MediaFormat
 
 object CodecProbe {
-    private val WANTED_TYPES = setOf(MediaFormat.MIMETYPE_VIDEO_AVC, MediaFormat.MIMETYPE_VIDEO_HEVC)
+    private val WANTED_TYPES =
+        setOf(MediaFormat.MIMETYPE_VIDEO_AVC, MediaFormat.MIMETYPE_VIDEO_HEVC)
 
     // The high-speed camera path records at 1280x720 (smallest high-speed size).
     private const val WIDTH = 1280
@@ -61,11 +62,26 @@ object CodecProbe {
         }
 
         for (fps in FRAME_RATES) {
-            appendLine("  ${WIDTH}x$HEIGHT@$fps supported: ${video.areSizeAndRateSupported(WIDTH, HEIGHT, fps.toDouble())}")
+            appendLine(
+                "  ${WIDTH}x$HEIGHT@$fps supported: ${
+                    video.areSizeAndRateSupported(
+                        WIDTH,
+                        HEIGHT,
+                        fps.toDouble()
+                    )
+                }"
+            )
         }
         // Throws if the size itself is unsupported, so check it first.
         if (video.isSizeSupported(WIDTH, HEIGHT)) {
-            appendLine("  achievable fps at ${WIDTH}x$HEIGHT: ${video.getAchievableFrameRatesFor(WIDTH, HEIGHT) ?: "not published"}")
+            appendLine(
+                "  achievable fps at ${WIDTH}x$HEIGHT: ${
+                    video.getAchievableFrameRatesFor(
+                        WIDTH,
+                        HEIGHT
+                    ) ?: "not published"
+                }"
+            )
         }
 
         val points = video.supportedPerformancePoints
@@ -87,7 +103,17 @@ object CodecProbe {
             }
             val encoderCaps = caps.encoderCapabilities
             if (encoderCaps != null) {
-                appendLine("  bitrate modes: ${BITRATE_MODES.joinToString { (mode, name) -> "$name=${encoderCaps.isBitrateModeSupported(mode)}" }}")
+                appendLine(
+                    "  bitrate modes: ${
+                        BITRATE_MODES.joinToString { (mode, name) ->
+                            "$name=${
+                                encoderCaps.isBitrateModeSupported(
+                                    mode
+                                )
+                            }"
+                        }
+                    }"
+                )
             }
         } else {
             appendLine("  FEATURE_LowLatency: ${caps.isFeatureSupported(CodecCapabilities.FEATURE_LowLatency)}")
