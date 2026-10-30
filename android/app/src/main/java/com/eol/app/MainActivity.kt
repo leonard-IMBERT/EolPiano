@@ -13,6 +13,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import com.eol.app.capture.BaselineCapture
+import com.eol.app.capture.FrameLog
+import com.eol.app.ui.BaselineCaptureScreen
 import com.eol.app.ui.HomeScreen
 import com.eol.app.ui.HomeAction
 import com.eol.app.ui.ProbeScreen
@@ -20,7 +23,8 @@ import com.eol.app.ui.theme.EolTheme
 
 enum class Screen {
     Home,
-    Probe
+    Probe,
+    BaselineCapture,
 }
 
 class MainActivity : ComponentActivity() {
@@ -34,13 +38,19 @@ class MainActivity : ComponentActivity() {
                     when (screen) {
                         Screen.Home -> HomeScreen(
                             listOf(
-                                HomeAction("Probe") { screen = Screen.Probe }
+                                HomeAction("Probe") { screen = Screen.Probe },
+                                HomeAction("Baseline Capture") { screen = Screen.BaselineCapture}
                             ), modifier = Modifier.padding(innerPadding)
                         )
 
                         Screen.Probe -> {
                             BackHandler { screen = Screen.Home }
                             ProbeScreen(modifier = Modifier.padding(innerPadding), log = true)
+                        }
+
+                        Screen.BaselineCapture -> {
+                            BackHandler { screen = Screen.Home }
+                            BaselineCaptureScreen(modifier = Modifier.padding(innerPadding))
                         }
                     }
 

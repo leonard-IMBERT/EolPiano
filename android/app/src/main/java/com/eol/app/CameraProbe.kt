@@ -9,7 +9,7 @@ import android.hardware.camera2.params.StreamConfigurationMap
 import kotlin.math.roundToInt
 
 object CameraProbe {
-    private val FACING = mapOf(
+    val FACING = mapOf(
         CameraMetadata.LENS_FACING_FRONT to "front",
         CameraMetadata.LENS_FACING_BACK to "back",
         CameraMetadata.LENS_FACING_EXTERNAL to "external",

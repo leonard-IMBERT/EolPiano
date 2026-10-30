@@ -165,7 +165,40 @@ Derived metrics:
 
 ### Baseline
 
-Run the same measurements with a normal CameraX `ImageAnalysis` stream at 30 fps on the same camera and lighting. The comparison is what matters, not the absolute numbers.
+Run the same measurements with a normal Camera2 session streaming into a YUV `ImageReader` at 30 fps, on the same camera and lighting. The comparison is what matters, not the absolute numbers.
+
+Why 30 fps:
+
+- It is the fastest rate normal mode offers with auto-exposure on: the highest AE target range is `[30, 30]` on every camera (see [What the phone reports](#what-the-phone-reports)). The baseline is "the best the ordinary path gives", so it should run at that ceiling.
+- The range is fixed (`[30, 30]`, not `[15, 30]`) so auto-exposure cannot lower the frame rate in dim light. A variable rate would mix exposure changes into the latency numbers and make runs under different lighting incomparable.
+
+The capture screen lets you choose another fps, for side experiments such as 60 fps with manual exposure ([above](#what-the-phone-reports)). Baseline runs use 30.
+
+#### Baseline results
+
+Measured on Oct 30, 2026 with the app's baseline capture screen (`BaselineCapture`): one 10 s run per camera, 1280×720 `YUV_420_888` into an `ImageReader` (4 buffers), AE target range `[30, 30]`, noise reduction and edge `FAST`, stabilization off. The CSVs are in `baseline/` at the repo root. Lighting was not recorded.
+
+Definitions, all from timestamps on the same `REALTIME` clock:
+
+- **Sensor → image**: `SENSOR_TIMESTAMP` (start of exposure) to `onImageAvailable` in the app. This is the latency that matters for hand tracking.
+- **Sensor → result**: `SENSOR_TIMESTAMP` to `onCaptureCompleted` (the metadata).
+- **After exposure**: median sensor → image minus the exposure time. Each run used a single exposure value throughout, so this is the time spent on readout and in the camera pipeline.
+
+| Camera ID | Frames | Measured fps | Frame interval (min / median / max) | Exposure | Sensor → image (min / median / p95 / max) | After exposure (median) | Sensor → result (median / p95) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 (back main) | 274 | 30.00 | 33.28 / 33.33 / 33.39 ms | 20.0 ms | 44.6 / **73.2** / 83.4 / 100.3 ms | 53 ms | 79.4 / 88.0 ms |
+| 1 (front) | 289 | 30.00 | 32.95 / 33.33 / 33.71 ms | 30.0 ms | 63.3 / **85.5** / 97.4 / 104.2 ms | 56 ms | 91.2 / 100.8 ms |
+| 2 (back ultra-wide) | 282 | 29.99 | 32.42 / 33.34 / 34.28 ms | 20.0 ms | 64.7 / **91.2** / 97.8 / 105.5 ms | 71 ms | 94.4 / 100.9 ms |
+| 3 (front) | 289 | 30.00 | 33.23 / 33.33 / 33.44 ms | 30.0 ms | 57.4 / **78.3** / 90.7 / 97.5 ms | 48 ms | 82.4 / 94.6 ms |
+
+Observations:
+
+- **The fixed range holds.** All four cameras delivered exactly 30 fps, with no interval above 34.3 ms and every image matched by a capture result. No image arrived in the same callback as another, so the ordinary path does not batch.
+- **Median sensor → image is 73–91 ms**, and p95 is 83–98 ms. This is the number the high-speed path has to beat (see [Decision rule](#decision-rule)).
+- **Exposure accounts for 20–30 ms of it.** Auto-exposure settled on 20 ms for the back cameras and 30 ms for the front cameras. With a fixed `[30, 30]` range, auto-exposure can lengthen exposure up to the 33 ms frame period, so a dimmer room raises the baseline latency.
+- **Readout and pipeline take about 50 ms** after exposure on cameras 0, 1 and 3, and about 70 ms on camera 2 (ultra-wide). For the experiment, compare cameras 0 and 1 or 3, since camera 2 has no high-speed mode.
+- **The image reaches the app before its metadata**: the capture result arrives a median 3–4 ms later (up to 18 ms). Tracking should start on the image without waiting for the result.
+- Each 10 s run contains only 9.1–9.6 s of frames, because the timer starts before the camera opens. This affects the frame count only, not the latencies.
 
 ### Decision rule
 
@@ -181,7 +214,7 @@ If landmarks arrive fast but per-frame latency is higher than baseline, the path
 | Stage | 30 fps normal | 120 fps high-speed path |
 | --- | --- | --- |
 | Exposure (up to one frame) | 0–33 ms | 0–8 ms |
-| Sensor to app | \~24 ms (Pixel 2 measurement) | unknown; encoder + decoder add an estimated 1–3 frames |
+| Sensor to app | measured \~50 ms after exposure on cameras 0, 1 and 3 ([Baseline results](#baseline-results)); 73–85 ms median including exposure | unknown; encoder + decoder add an estimated 1–3 frames |
 | Press detection (2–3 frames) | 67–100 ms | 17–25 ms |
 | Hand tracking | 12–17 ms on Pixel 6 GPU | same per frame, but must keep up with 120 fps |
 
